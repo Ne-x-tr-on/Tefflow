@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tefflow - Smart Farming, Smarter Future</title>
+    <meta name="description" content="Tefflow - The user-facing platform for farmers" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌾</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom animations for landing page */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        .animate-scale-in {
+            animation: scaleIn 0.5s ease-out forwards;
+        }
+        /* Custom styles for charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .mobile-padding {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .mobile-mt {
+                margin-top: 5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app">
+        <!-- Navbar - Only show if not on landing page -->
+        <nav id="navbar" class="bg-white shadow-md hidden">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center">
+                    <span class="text-3xl mr-2">🌾</span>
+                    <span class="text-2xl font-bold text-green-700">Tefflow</span>
+                </div>
+                
+                <div class="hidden md:flex space-x-6">
+                    <button data-page="dashboard" class="nav-item flex items-center py-2 px-3 rounded-md text-gray-600 hover:text-green-700">
+                        <span class="mr-2">📊</span> Dashboard
+                    </button>
+                    <button data-page="health" class="nav-item flex items-center py-2 px-3 rounded-md text-gray-600 hover:text-green-700">
+                        <span class="mr-2">🏥</span> Health Check
+                    </button>
+                    <button data-page="marketplace" class="nav-item flex items-center py-2 px-3 rounded-md text-gray-600 hover:text-green-700">
+                        <span class="mr-2">🛒</span> Marketplace
+                    </button>
+                    <button data-page="community" class="nav-item flex items-center py-2 px-3 rounded-md text-gray-600 hover:text-green-700">
+                        <span class="mr-2">👥</span> Community
+                    </button>
+                    <button data-page="profile" class="nav-item flex items-center py-2 px-3 rounded-md text-gray-600 hover:text-green-700">
+                        <span class="mr-2">👤</span> Profile
+                    </button>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="relative mr-4">
+                        <button id="notification-btn" class="p-2 rounded-full hover:bg-green-100 text-gray-600">
+                            <span class="text-xl">🔔</span>
+                            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+                        </button>
+                        
+                        <div id="notification-panel" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-10 hidden">
+                            <div class="p-4 border-b">
+                                <h3 class="font-semibold">Notifications</h3>
+                            </div>
+                            <div class="max-h-60 overflow-y-auto">
+                                <div class="p-4 border-b hover:bg-green-50 cursor-pointer">
+                                    <p class="font-medium">Your cow may be sick</p>
+                                    <p class="text-sm text-gray-600">Health check recommended for animal #234</p>
+                                    <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+                                </div>
+                                <div class="p-4 border-b hover:bg-green-50 cursor-pointer">
+                                    <p class="font-medium">New marketplace listing</p>
+                                    <p class="text-sm text-gray-600">Organic fertilizer now available</p>
+                                    <p class="text-xs text-gray-500 mt-1">5 hours ago</p>
+                                </div>
+                                <div class="p-4 hover:bg-green-50 cursor-pointer">
+                                    <p class="font-medium">Weather alert</p>
+                                    <p class="text-sm text-gray-600">Rain expected tomorrow</p>
+                                    <p class="text-xs text-gray-500 mt-1">1 day ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="bg-green-600 text-white px-4 py-2 rounded-md">
+                        Login
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Navigation - Only show if not on landing page -->
+        <div id="mobile-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg z-10 hidden">
+            <div class="flex justify-around">
+                <button data-page="dashboard" class="mobile-nav-item flex flex-col items-center py-3 px-2 text-gray-600">
+                    <span class="text-xl">📊</span>
+                    <span class="text-xs mt-1">Dashboard</span>
+                </button>
+                <button data-page="health" class="mobile-nav-item flex flex-col items-center py-3 px-2 text-gray-600">
+                    <span class="text-xl">🏥</span>
+                    <span class="text-xs mt-1">Health</span>
+                </button>
+                <button data-page="marketplace" class="mobile-nav-item flex flex-col items-center py-3 px-2 text-gray-600">
+                    <span class="text-xl">🛒</span>
+                    <span class="text-xs mt-1">Market</span>
+                </button>
+                <button data-page="community" class="mobile-nav-item flex flex-col items-center py-3 px-2 text-gray-600">
+                    <span class="text-xl">👥</span>
+                    <span class="text-xs mt-1">Community</span>
+                </button>
+                <button data-page="profile" class="mobile-nav-item flex flex-col items-center py-3 px-2 text-gray-600">
+                    <span class="text-xl">👤</span>
+                    <span class="text-xs mt-1">Profile</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="container mx-auto pb-20 md:pb-0 mobile-padding mobile-mt">
+            <!-- Landing Page (Default) -->
+            <div id="landing-page" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
+                <div class="text-center px-4">
+                    <h1 class="text-4xl md:text-6xl font-bold text-green-800 mb-6 animate-fade-in-up">Smart Farming, Smarter Future</h1>
+                    <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto animate-fade-in-up" style="animation-delay: 0.2s">
+                        Tefflow helps farmers manage their operations, connect with markets, and leverage AI for better yields.
+                    </p>
+                    <button id="get-started-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-lg animate-scale-in" style="animation-delay: 0.4s">
+                        Get Started
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="hidden">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-6">Farm Overview</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-2">Livestock</h3>
+                            <p class="text-4xl font-bold text-green-700">42</p>
+                            <p class="text-gray-500">Animals</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-2">Crops</h3>
+                            <p class="text-4xl font-bold text-green-700">5</p>
+                            <p class="text-gray-500">Types</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-2">Sales</h3>
+                            <p class="text-4xl font-bold text-green-700">$3,240</p>
+                            <p class="text-gray-500">This Month</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">Monthly Sales</h3>
+                            <div class="chart-container">
+                                <canvas id="sales-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">Crop Distribution</h3>
+                            <div class="chart-container">
+                                <canvas id="crop-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Check Page -->
+            <div id="health-page" class="hidden">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-6">AI Health Check</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">Upload Image</h3>
+                            <div class="border-2 border-dashed border-green-300 rounded-lg p-8 text-center">
+                                <div id="upload-area">
+                                    <p class="text-gray-500 mb-4">Upload a picture of your crop or animal for analysis</p>
+                                    <label for="file-upload" class="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-md">
+                                        Select Image
+                                    </label>
+                                    <input id="file-upload" type="file" accept="image/*" class="hidden" />
+                                </div>
+                                <div id="upload-preview" class="hidden">
+                                    <img id="preview-image" src="" alt="Uploaded preview" class="mx-auto mb-4 max-h-48 rounded" />
+                                    <button id="remove-image" class="bg-red-100 text-red-700 px-4 py-2 rounded-md mr-2">
+                                        Remove
+                                    </button>
+                                    <button id="analyze-image" class="bg-green-100 text-green-700 px-4 py-2 rounded-md">
+                                        Analyze
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">Last Analysis Result</h3>
+                            <div class="p-4 bg-green-50 rounded-lg">
+                                <p class="font-semibold">Crop: Teff</p>
+                                <p class="mt-2">Status: <span class="text-green-700 font-semibold">Healthy</span></p>
+                                <p class="mt-4">Recommendations:</p>
+                                <ul class="list-disc pl-5 mt-2">
+                                    <li>Maintain current watering schedule</li>
+                                    <li>Consider adding nitrogen-rich fertilizer in 2 weeks</li>
+                                    <li>Monitor for signs of rust fungus</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketplace Page -->
+            <div id="marketplace-page" class="hidden">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-6">Marketplace</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                            <div class="h-48 bg-green-200"></div>
+                            <div class="p-4">
+                                <h3 class="font-semibold text-lg">Organic Teff Grain</h3>
+                                <p class="text-gray-600 mt-2">High-quality teff grain, freshly harvested</p>
+                                <div class="flex justify-between items-center mt-4">
+                                    <span class="font-bold text-green-700">$45.00/bag</span>
+                                    <button class="bg-green-600 text-white px-4 py-2 rounded-md">Buy Now</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                            <div class="h-48 bg-green-200"></div>
+                            <div class="p-4">
+                                <h3 class="font-semibold text-lg">Fresh Dairy Milk</h3>
+                                <p class="text-gray-600 mt-2">Fresh from pasture-fed cows</p>
+                                <div class="flex justify-between items-center mt-4">
+                                    <span class="font-bold text-green-700">$3.50/liter</span>
+                                    <button class="bg-green-600 text-white px-4 py-2 rounded-md">Buy Now</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
+                            <div class="h-48 bg-green-200"></div>
+                            <div class="p-4">
+                                <h3 class="font-semibold text-lg">Organic Fertilizer</h3>
+                                <p class="text-gray-600 mt-2">Natural compost for better yields</p>
+                                <div class="flex justify-between items-center mt-4">
+                                    <span class="font-bold text-green-700">$28.00/bag</span>
+                                    <button class="bg-green-600 text-white px-4 py-2 rounded-md">Buy Now</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Page -->
+            <div id="community-page" class="hidden">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-6">Community Forum</h2>
+                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                        <div class="flex">
+                            <div class="w-12 h-12 rounded-full bg-green-200 flex items-center justify-center mr-4">
+                                <span class="text-xl">👤</span>
+                            </div>
+                            <input type="text" placeholder="Start a discussion..." class="flex-1 border border-gray-300 rounded-full px-4 py-2" />
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center mr-3">
+                                    <span class="text-lg">👤</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Abebe Kebede</p>
+                                    <p class="text-sm text-gray-500">Posted 2 hours ago</p>
+                                </div>
+                            </div>
+                            <h3 class="font-semibold text-lg mb-2">Best practices for teff irrigation?</h3>
+                            <p class="text-gray-700">I'm looking for advice on optimal irrigation schedules for teff during the dry season. What has worked best for other farmers in similar conditions?</p>
+                            <div class="flex mt-4 space-x-4">
+                                <button class="flex items-center text-gray-500">
+                                    <span class="mr-1">👍</span> 12
+                                </button>
+                                <button class="flex items-center text-gray-500">
+                                    <span class="mr-1">💬</span> 5
+                                </button>
+                                <button class="flex items-center text-gray-500">
+                                    <span class="mr-1">🔗</span> Share
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center mr-3">
+                                    <span class="text-lg">👤</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Tigist Haile</p>
+                                    <p class="text-sm text-gray-500">Posted 1 day ago</p>
+                                </div>
+                            </div>
+                            <h3 class="font-semibold text-lg mb-2">Market prices for wheat</h3>
+                            <p class="text-gray-700">Has anyone sold wheat recently? What prices are you getting per quintal in the current market? I'm trying to decide whether to sell now or wait.</p>
+                            <div class="flex mt-4 space-x-4">
+                                <button class="flex items-center text-gray-500">
+                                    <span class="mr-1">👍</span> 8
+                                </button>
+                                <button class="flex items-center text-gray-500">
+                                    <span class="mr-1">💬</span> 3
+                                </button>
+                                <button class="flex items-center text-gray-500">
+                                    <span class="mr-1">🔗</span> Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile-page" class="hidden">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-6">Your Profile</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-lg font-semibold mb-4">Personal Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">First Name</label>
+                                    <input type="text" class="w-full border border-gray-300 rounded-md px-4 py-2" value="Abebe" />
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Last Name</label>
+                                    <input type="text" class="w-full border border-gray-300 rounded-md px-4 py-2" value="Kebede" />
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Email</label>
+                                    <input type="email" class="w-full border border-gray-300 rounded-md px-4 py-2" value="abebe@example.com" />
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Phone</label>
+                                    <input type="tel" class="w-full border border-gray-300 rounded-md px-4 py-2" value="+251 91 234 5678" />
+                                </div>
+                            </div>
+                            <button class="mt-6 bg-green-600 text-white px-4 py-2 rounded-md">Save Changes</button>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-lg font-semibold mb-4">Farm Information</h3>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">Farm Name</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-md px-4 py-2" value="Green Valley Teff Farm" />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">Location</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-md px-4 py-2" value="Amhara Region, Ethiopia" />
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 mb-2">Farm Size (hectares)</label>
+                                <input type="number" class="w-full border border-gray-300 rounded-md px-4 py-2" value="12.5" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer - Only show if not on landing page -->
+        <footer id="footer" class="bg-green-800 text-white py-10 mt-10 hidden">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <span class="text-3xl mr-2">🌾</span>
+                            <span class="text-2xl font-bold">Tefflow</span>
+                        </div>
+                        <p class="text-green-100">Empowering farmers with technology for a sustainable future.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-green-100 hover:text-white">About Us</a></li>
+                            <li><a href="#" class="text-green-100 hover:text-white">Contact</a></li>
+                            <li><a href="#" class="text-green-100 hover:text-white">Privacy Policy</a></li>
+                            <li><a href="#" class="text-green-100 hover:text-white">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Connect With Us</h3>
+                        <div class="flex space-x-4">
+                            <a href="#" class="bg-green-700 h-10 w-10 rounded-full flex items-center justify-center hover:bg-green-600">
+                                <span class="text-xl">📱</span>
+                            </a>
+                            <a href="#" class="bg-green-700 h-10 w-10 rounded-full flex items-center justify-center hover:bg-green-600">
+                                <span class="text-xl">💬</span>
+                            </a>
+                            <a href="#" class="bg-green-700 h-10 w-10 rounded-full flex items-center justify-center hover:bg-green-600">
+                                <span class="text-xl">📸</span>
+                            </a>
+                        </div>
+                        <p class="mt-4 text-green-100">Subscribe to our newsletter</p>
+                        <div class="mt-2 flex">
+                            <input type="email" placeholder="Your email" class="px-4 py-2 rounded-l-md text-gray-800 w-full" />
+                            <button class="bg-green-600 px-4 py-2 rounded-r-md">Subscribe</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-green-700 mt-8 pt-6 text-center text-green-200">
+                    <p>© 2023 Tefflow. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // State management
+        let activePage = 'landing';
+        let notificationOpen = false;
+        let uploadedImage = null;
+
+        // Sample data for charts
+        const salesData = [
+            { month: 'Jan', sales: 4000 },
+            { month: 'Feb', sales: 3000 },
+            { month: 'Mar', sales: 2000 },
+            { month: 'Apr', sales: 2780 },
+            { month: 'May', sales: 1890 },
+            { month: 'Jun', sales: 2390 },
+        ];
+
+        const cropDistribution = [
+            { name: 'Teff', value: 35 },
+            { name: 'Wheat', value: 25 },
+            { name: 'Barley', value: 15 },
+            { name: 'Corn', value: 25 },
+        ];
+
+        const COLORS = ['#228B22', '#8DB600', '#ADFF2F', '#7CFC00'];
+
+        // DOM Elements
+        const navbar = document.getElementById('navbar');
+        const mobileNav = document.getElementById('mobile-nav');
+        const footer = document.getElementById('footer');
+        const notificationBtn = document.getElementById('notification-btn');
+        const notificationPanel = document.getElementById('notification-panel');
+        const fileUpload = document.getElementById('file-upload');
+        const uploadArea = document.getElementById('upload-area');
+        const uploadPreview = document.getElementById('upload-preview');
+        const previewImage = document.getElementById('preview-image');
+        const removeImageBtn = document.getElementById('remove-image');
+        const analyzeImageBtn = document.getElementById('analyze-image');
+        const getStartedBtn = document.getElementById('get-started-btn');
+        const navItems = document.querySelectorAll('.nav-item');
+        const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+
+        // Initialize the application
+        function init() {
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize charts
+            initCharts();
+        }
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Navigation items
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    setActivePage(item.getAttribute('data-page'));
+                });
+            });
+
+            // Mobile navigation items
+            mobileNavItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    setActivePage(item.getAttribute('data-page'));
+                });
+            });
+
+            // Notification button
+            notificationBtn.addEventListener('click', () => {
+                notificationOpen = !notificationOpen;
+                notificationPanel.classList.toggle('hidden', !notificationOpen);
+            });
+
+            // Get started button
+            getStartedBtn.addEventListener('click', () => {
+                setActivePage('dashboard');
+            });
+
+            // File upload
+            fileUpload.addEventListener('change', handleImageUpload);
+
+            // Remove image button
+            removeImageBtn.addEventListener('click', () => {
+                uploadedImage = null;
+                fileUpload.value = '';
+                uploadArea.classList.remove('hidden');
+                uploadPreview.classList.add('hidden');
+            });
+
+            // Analyze image button
+            analyzeImageBtn.addEventListener('click', () => {
+                alert('Image analysis would happen here. This is a demo.');
+            });
+
+            // Close notification panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (notificationOpen && !notificationBtn.contains(e.target) && !notificationPanel.contains(e.target)) {
+                    notificationOpen = false;
+                    notificationPanel.classList.add('hidden');
+                }
+            });
+        }
+
+        // Set active page
+        function setActivePage(page) {
+            activePage = page;
+            
+            // Hide all pages
+            document.querySelectorAll('main > div').forEach(div => {
+                div.classList.add('hidden');
+            });
+            
+            // Show active page
+            document.getElementById(`${page}-page`).classList.remove('hidden');
+            
+            // Update UI based on page
+            if (page === 'landing') {
+                navbar.classList.add('hidden');
+                mobileNav.classList.add('hidden');
+                footer.classList.add('hidden');
+            } else {
+                navbar.classList.remove('hidden');
+                mobileNav.classList.remove('hidden');
+                footer.classList.remove('hidden');
+                
+                // Update active nav item
+                updateActiveNavItem(page);
+            }
+            
+            // Reinitialize charts if needed
+            if (page === 'dashboard') {
+                initCharts();
+            }
+        }
+
+        // Update active navigation item
+        function updateActiveNavItem(page) {
+            // Desktop nav
+            navItems.forEach(item => {
+                if (item.getAttribute('data-page') === page) {
+                    item.classList.add('bg-green-100', 'text-green-700');
+                } else {
+                    item.classList.remove('bg-green-100', 'text-green-700');
+                }
+            });
+            
+            // Mobile nav
+            mobileNavItems.forEach(item => {
+                if (item.getAttribute('data-page') === page) {
+                    item.classList.add('text-green-700');
+                } else {
+                    item.classList.remove('text-green-700');
+                }
+            });
+        }
+
+        // Handle image upload
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImage = e.target.result;
+                    previewImage.src = uploadedImage;
+                    uploadArea.classList.add('hidden');
+                    uploadPreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Sales chart
+            const salesCtx = document.getElementById('sales-chart').getContext('2d');
+            new Chart(salesCtx, {
+                type: 'bar',
+                data: {
+                    labels: salesData.map(item => item.month),
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: salesData.map(item => item.sales),
+                        backgroundColor: '#228B22',
+                        borderColor: '#1c6b1c',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Crop distribution chart
+            const cropCtx = document.getElementById('crop-chart').getContext('2d');
+            new Chart(cropCtx, {
+                type: 'pie',
+                data: {
+                    labels: cropDistribution.map(item => item.name),
+                    datasets: [{
+                        data: cropDistribution.map(item => item.value),
+                        backgroundColor: COLORS,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${percentage}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
